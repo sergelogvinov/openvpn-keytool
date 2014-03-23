@@ -1,0 +1,201 @@
+#
+
+# This definition stops the following lines choking if HOME isn't
+# defined.
+HOME			= .
+RANDFILE		= $ENV::HOME/.rnd
+
+####################################################################
+[ ca ]
+default_ca	= CA_default		# The default ca section
+
+####################################################################
+[ CA_default ]
+
+dir		= $ENV::KEY_DIR		# Where everything is kept
+certs		= $dir			# Where the issued certs are kept
+crl_dir		= $dir			# Where the issued crl are kept
+database	= $dir/index.txt	# database index file.
+new_certs_dir	= $dir			# default place for new certs.
+
+certificate	= $dir/ca.crt	 	# The CA certificate
+serial		= $dir/serial 		# The current serial number
+crl		= $dir/crl.pem 		# The current CRL
+private_key	= $dir/ca.key	 	# The private key
+RANDFILE	= $dir/.rand		# private random number file
+
+x509_extensions	= usr_cert		# The extentions to add to the cert
+
+# Comment out the following two lines for the "traditional"
+# (and highly broken) format.
+name_opt        = ca_default
+cert_opt        = ca_default
+
+default_days	= 3650			# how long to certify for
+default_crl_days= 30			# how long before next CRL
+default_md	= sha1			# which md to use.
+preserve	= no			# keep passed DN ordering
+
+policy		= policy_match
+
+# For the CA policy
+[ policy_match ]
+countryName		= match
+stateOrProvinceName	= match
+organizationName	= match
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+[ policy_anything ]
+countryName		= optional
+stateOrProvinceName	= optional
+localityName		= optional
+organizationName	= optional
+organizationalUnitName	= optional
+commonName		= supplied
+emailAddress		= optional
+
+####################################################################
+[ req ]
+default_bits		= $ENV::KEY_SIZE
+default_keyfile 	= privkey.pem
+default_md		= sha1
+
+prompt                  = no
+
+distinguished_name	= req_distinguished_name
+
+x509_extensions	= v3_ca	# The extentions to add to the self signed cert
+
+
+# This sets a mask for permitted string types. There are several options. 
+# default: PrintableString, T61String, BMPString.
+# pkix	 : PrintableString, BMPString.
+# utf8only: only UTF8Strings.
+# nombstr : PrintableString, T61String (no BMPStrings or UTF8Strings).
+# MASK:XXXX a literal mask value.
+# WARNING: current versions of Netscape crash on BMPStrings or UTF8Strings
+# so use this option with caution!
+string_mask = nombstr
+
+# req_extensions = v3_req # The extensions to add to a certificate request
+
+[ req_distinguished_name ]
+countryName			    = US
+stateOrProvinceName		= New York
+localityName			= New York city
+0.organizationName		= ArendIT
+organizationalUnitName	= NetEx
+
+commonName			    = $ENV::KEY_HOST
+emailAddress			= $ENV::KEY_MAIL
+
+[ usr_cert ]
+
+# These extensions are added when 'ca' signs a request.
+
+# This goes against PKIX guidelines but some CAs do it and some software
+# requires this to avoid interpreting an end user certificate as a CA.
+
+basicConstraints=CA:FALSE
+
+# Here are some examples of the usage of nsCertType. If it is omitted
+# the certificate can be used for anything *except* object signing.
+
+# This is OK for an SSL server.
+# nsCertType			= server
+
+# For an object signing certificate this would be used.
+# nsCertType = objsign
+
+# For normal client use this is typical
+# nsCertType = client, email
+
+# and for everything including object signing:
+# nsCertType = client, email, objsign
+
+# This is typical in keyUsage for a client certificate.
+# keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+
+# This will be displayed in Netscape's comment listbox.
+nsComment			= "OpenSSL Generated Certificate"
+
+# PKIX recommendations harmless if included in all certificates.
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid,issuer:always
+
+# This stuff is for subjectAltName and issuerAltname.
+# Import the email address.
+# subjectAltName=email:copy
+
+# Copy subject details
+# issuerAltName=issuer:copy
+
+#nsCaRevocationUrl		= http://www.domain.dom/ca-crl.pem
+#nsBaseUrl
+#nsRevocationUrl
+#nsRenewalUrl
+#nsCaPolicyUrl
+#nsSslServerName
+
+[ server ]
+
+# JY ADDED -- Make a cert with nsCertType set to "server"
+basicConstraints=CA:FALSE
+nsCertType			= server
+nsComment			= "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid,issuer:always
+
+[ v3_req ]
+
+# Extensions to add to a certificate request
+
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+
+[ v3_ca ]
+
+
+# Extensions for a typical CA
+
+
+# PKIX recommendation.
+
+subjectKeyIdentifier=hash
+
+authorityKeyIdentifier=keyid:always,issuer:always
+
+# This is what PKIX recommends but some broken software chokes on critical
+# extensions.
+#basicConstraints = critical,CA:true
+# So we do this instead.
+basicConstraints = CA:true
+
+# Key usage: this is typical for a CA certificate. However since it will
+# prevent it being used as an test self-signed certificate it is best
+# left out by default.
+# keyUsage = cRLSign, keyCertSign
+
+# Some might want this also
+# nsCertType = sslCA, emailCA
+
+# Include email address in subject alt name: another PKIX recommendation
+# subjectAltName=email:copy
+# Copy issuer details
+# issuerAltName=issuer:copy
+
+# DER hex encoding of an extension: beware experts only!
+# obj=DER:02:03
+# Where 'obj' is a standard or added object
+# You can even override a supported extension:
+# basicConstraints= critical, DER:30:03:01:01:FF
+
+[ crl_ext ]
+
+# CRL extensions.
+# Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.
+
+# issuerAltName=issuer:copy
+authorityKeyIdentifier=keyid:always,issuer:always
